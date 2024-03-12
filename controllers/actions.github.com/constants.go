@@ -72,3 +72,8 @@ const (
 	ReasonTooManyPodFailures = "TooManyPodFailures"
 	ReasonInvalidPodFailure  = "InvalidPod"
 )
+
+// Rbac managing envs flags
+const (
+	SkipRbacSetupForController = "SKIP_RBAC_SETUP_FOR_CONTROLLER"
+)

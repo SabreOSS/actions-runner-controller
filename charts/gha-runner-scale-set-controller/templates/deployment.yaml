@@ -94,6 +94,10 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        {{- if eq .Values.flags.skipRbacSetup true }}
+        - name: SKIP_RBAC_SETUP_FOR_CONTROLLER
+          value: "true"
+        {{- end }}
         {{- with .Values.env }}
           {{- if kindIs "slice" . }}
             {{- toYaml . | nindent 8 }}
