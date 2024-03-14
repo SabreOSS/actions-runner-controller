@@ -30,3 +30,11 @@ func RandStringRunes(n int) string {
 func ShouldSkipRbac() bool {
 	return os.Getenv(SkipRbacSetupForController) == "true"
 }
+
+func ShouldSkipListenerRbacSetup() bool {
+	return os.Getenv(SkipRbacSetupForListeners) == "true"
+}
+
+func ShouldSkipListenerSaCreation() bool {
+	return os.Getenv(RequireListenerSAProvided) == "true"
+}
