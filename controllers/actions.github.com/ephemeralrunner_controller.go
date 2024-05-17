@@ -150,6 +150,11 @@ func (r *EphemeralRunnerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, nil
 	}
 
+	if ephemeralRunner.Status.RunnerId == 0 {
+		log.Info("Creating new ephemeral runner registration and updating status with runner config")
+		return r.updateStatusWithRunnerConfig(ctx, ephemeralRunner, log)
+	}
+
 	if !controllerutil.ContainsFinalizer(ephemeralRunner, ephemeralRunnerActionsFinalizerName) {
 		log.Info("Adding runner registration finalizer")
 		err := patch(ctx, r.Client, ephemeralRunner, func(obj *v1alpha1.EphemeralRunner) {
@@ -174,11 +179,6 @@ func (r *EphemeralRunnerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 		log.Info("Successfully added finalizer")
 		return ctrl.Result{}, nil
-	}
-
-	if ephemeralRunner.Status.RunnerId == 0 {
-		log.Info("Creating new ephemeral runner registration and updating status with runner config")
-		return r.updateStatusWithRunnerConfig(ctx, ephemeralRunner, log)
 	}
 
 	secret := new(corev1.Secret)
