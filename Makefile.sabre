@@ -10,10 +10,12 @@ ifeq (${PLATFORMS}, )
 endif
 
 package-controller-chart:  ## build controller chart
+	rm -rf charts/gha-runner-scale-set-controller/*.tgz
 	@echo "Building package-controller"
 	@cd charts/gha-runner-scale-set-controller && helm package . --version ${VERSION} --app-version ${VERSION}
 
 package-runnerset-chart: ## build runnerset chart
+	rm -rf charts/gha-runner-scale-set/*.tgz
 	@echo "Building package-runnerset"
 	@cd charts/gha-runner-scale-set && helm package . --version ${VERSION} --app-version ${VERSION}
 
