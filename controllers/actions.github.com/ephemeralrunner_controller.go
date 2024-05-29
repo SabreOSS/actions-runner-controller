@@ -150,9 +150,17 @@ func (r *EphemeralRunnerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, nil
 	}
 
-	if ephemeralRunner.Status.RunnerId == 0 {
-		log.Info("Creating new ephemeral runner registration and updating status with runner config")
-		return r.updateStatusWithRunnerConfig(ctx, ephemeralRunner, log)
+	if !controllerutil.ContainsFinalizer(ephemeralRunner, ephemeralRunnerFinalizerName) {
+		log.Info("Adding finalizer")
+		if err := patch(ctx, r.Client, ephemeralRunner, func(obj *v1alpha1.EphemeralRunner) {
+			controllerutil.AddFinalizer(obj, ephemeralRunnerFinalizerName)
+		}); err != nil {
+			log.Error(err, "Failed to update with finalizer set")
+			return ctrl.Result{}, err
+		}
+
+		log.Info("Successfully added finalizer")
+		return ctrl.Result{}, nil
 	}
 
 	if !controllerutil.ContainsFinalizer(ephemeralRunner, ephemeralRunnerActionsFinalizerName) {
@@ -166,19 +174,12 @@ func (r *EphemeralRunnerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		}
 
 		log.Info("Successfully added runner registration finalizer")
+		return ctrl.Result{}, nil
 	}
 
-	if !controllerutil.ContainsFinalizer(ephemeralRunner, ephemeralRunnerFinalizerName) {
-		log.Info("Adding finalizer")
-		if err := patch(ctx, r.Client, ephemeralRunner, func(obj *v1alpha1.EphemeralRunner) {
-			controllerutil.AddFinalizer(obj, ephemeralRunnerFinalizerName)
-		}); err != nil {
-			log.Error(err, "Failed to update with finalizer set")
-			return ctrl.Result{}, err
-		}
-
-		log.Info("Successfully added finalizer")
-		return ctrl.Result{}, nil
+	if ephemeralRunner.Status.RunnerId == 0 {
+		log.Info("Creating new ephemeral runner registration and updating status with runner config")
+		return r.updateStatusWithRunnerConfig(ctx, ephemeralRunner, log)
 	}
 
 	secret := new(corev1.Secret)
