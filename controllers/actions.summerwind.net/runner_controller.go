@@ -409,8 +409,6 @@ func (r *RunnerReconciler) processRunnerCreation(ctx context.Context, runner v1a
 
 		log.Error(err, "Failed to create pod resource")
 
-
-
 		errMsg := fmt.Sprintf("Failed to create pod resource: %v", err)
 		r.Recorder.Event(&runner, corev1.EventTypeWarning, "FailedCreatePod", errMsg)
 
@@ -437,7 +435,7 @@ func getEphemeralRunnerStatus(pod *corev1.Pod) string {
 	if status != nil && status.State.Terminated != nil {
 		return fmt.Sprintf("Ephemeral runner failed with exit code %d: %s", status.State.Terminated.ExitCode, status.State.Terminated.Message)
 	}
-	return ""
+	return "KLUZ_TEST"
 }
 
 func (r *RunnerReconciler) createObject(ctx context.Context, obj client.Object, meta metav1.ObjectMeta, runner *v1alpha1.Runner, log logr.Logger) *ctrl.Result {
