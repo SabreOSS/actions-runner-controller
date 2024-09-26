@@ -158,6 +158,8 @@ func (r *EphemeralRunnerSetReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 	ephemeralRunnerState := newEphemeralRunnerState(ephemeralRunnerList)
 
+	log.info("KLUZ_ERS_TEST")
+
 	log.Info("Ephemeral runner counts",
 		"pending", len(ephemeralRunnerState.pending),
 		"running", len(ephemeralRunnerState.running),
