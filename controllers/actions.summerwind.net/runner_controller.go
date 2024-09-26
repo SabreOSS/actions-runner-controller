@@ -147,6 +147,11 @@ func (r *RunnerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return r.processRunnerCreation(ctx, runner, log)
 	}
 
+	if status := getEphemeralRunnerStatus(&pod); status != "" {
+		log.Info(status)
+		r.Recorder.Event(&runner, corev1.EventTypeWarning, "EphemeralRunnerFailed", status)
+	}
+
 	phase := string(pod.Status.Phase)
 	if phase == "" {
 		phase = "Created"
@@ -402,6 +407,10 @@ func (r *RunnerReconciler) processRunnerCreation(ctx context.Context, runner v1a
 			return ctrl.Result{}, nil
 		}
 
+		log.Error(err, "Failed to create pod resource")
+
+
+
 		errMsg := fmt.Sprintf("Failed to create pod resource: %v", err)
 		r.Recorder.Event(&runner, corev1.EventTypeWarning, "FailedCreatePod", errMsg)
 
@@ -421,6 +430,14 @@ func (r *RunnerReconciler) processRunnerCreation(ctx context.Context, runner v1a
 	log.Info("Created runner pod", "repository", runner.Spec.Repository)
 
 	return ctrl.Result{}, nil
+}
+
+func getEphemeralRunnerStatus(pod *corev1.Pod) string {
+	status := ephemeralRunnerContainerStatus(pod)
+	if status != nil && status.State.Terminated != nil {
+		return fmt.Sprintf("Ephemeral runner failed with exit code %d: %s", status.State.Terminated.ExitCode, status.State.Terminated.Message)
+	}
+	return ""
 }
 
 func (r *RunnerReconciler) createObject(ctx context.Context, obj client.Object, meta metav1.ObjectMeta, runner *v1alpha1.Runner, log logr.Logger) *ctrl.Result {
