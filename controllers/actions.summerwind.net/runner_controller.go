@@ -138,6 +138,8 @@ func (r *RunnerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return r.processRunnerDeletion(runner, ctx, log, &pod)
 	}
 
+	log.Info("KLUZ start")
+
 	var pod corev1.Pod
 	if err := r.Get(ctx, req.NamespacedName, &pod); err != nil {
 		if !kerrors.IsNotFound(err) {
@@ -147,10 +149,14 @@ func (r *RunnerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return r.processRunnerCreation(ctx, runner, log)
 	}
 
+	log.Info("KLUZ mid")
+
 	if status := getEphemeralRunnerStatus(&pod); status != "" {
 		log.Info(status)
 		r.Recorder.Event(&runner, corev1.EventTypeWarning, "EphemeralRunnerFailed", status)
 	}
+
+	log.Info("KLUZ stop")
 
 	phase := string(pod.Status.Phase)
 	if phase == "" {
