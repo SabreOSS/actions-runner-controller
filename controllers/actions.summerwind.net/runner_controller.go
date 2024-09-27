@@ -102,6 +102,8 @@ type RunnerPodDefaults struct {
 func (r *RunnerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("runner", req.NamespacedName)
 
+	log.Info("KLUZ test start")
+
 	var runner v1alpha1.Runner
 	if err := r.Get(ctx, req.NamespacedName, &runner); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
