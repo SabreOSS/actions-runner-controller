@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/actions/actions-runner-controller/apis/actions.github.com/v1alpha1"
@@ -145,7 +146,14 @@ func (r *EphemeralRunnerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		}
 		// Stop reconciling on this object.
 		// The EphemeralRunnerSet is responsible for cleaning it up.
-		log.Info("EphemeralRunner has already finished. Stopping reconciliation and waiting for EphemeralRunnerSet to clean it up", "phase", ephemeralRunner.Status.Phase)
+		if ephemeralRunner.Status.Phase == corev1.PodFailed {
+			log.Info("EphemeralRunner has failed. Reconciliation and cleanup will not be handled by EphemeralRunnerSet", "phase", ephemeralRunner.Status.Phase)
+			if ReasonQuotaExceeded == ephemeralRunner.Status.Reason {
+				log.Info("EphemeralRunner has failed due to quota exceeded. I will be removed in few minutes by the dedicated cron job")
+			}
+		} else {
+			log.Info("EphemeralRunner has already finished. Stopping reconciliation and waiting for EphemeralRunnerSet to clean it up", "phase", ephemeralRunner.Status.Phase)
+		}
 		return ctrl.Result{}, nil
 	}
 
@@ -216,9 +224,13 @@ func (r *EphemeralRunnerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 			case err == nil:
 				return result, nil
 			case kerrors.IsInvalid(err) || kerrors.IsForbidden(err):
+				reason := ReasonInvalidPodFailure
+				if strings.Contains(err.Error(), "exceeded quota") {
+					reason = ReasonQuotaExceeded
+				}
 				log.Error(err, "Failed to create a pod due to unrecoverable failure")
 				errMessage := fmt.Sprintf("Failed to create the pod: %v", err)
-				if err := r.markAsFailed(ctx, ephemeralRunner, errMessage, ReasonInvalidPodFailure, log); err != nil {
+				if err := r.markAsFailed(ctx, ephemeralRunner, errMessage, reason, log); err != nil {
 					log.Error(err, "Failed to set ephemeral runner to phase Failed")
 					return ctrl.Result{}, err
 				}

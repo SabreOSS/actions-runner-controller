@@ -75,6 +75,7 @@ const resourceOwnerKey = ".metadata.controller"
 const (
 	ReasonTooManyPodFailures = "TooManyPodFailures"
 	ReasonInvalidPodFailure  = "InvalidPod"
+	ReasonQuotaExceeded      = "QuotaExceeded"
 )
 
 // Rbac managing envs flags
