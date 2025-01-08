@@ -730,7 +730,7 @@ func (r *AutoscalingListenerReconciler) publishRunningListener(autoscalingListen
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *AutoscalingListenerReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	log := r.Log.WithValues("autoscalinglistener")
+	log := mgr.GetLogger()
 
 	labelBasedWatchFunc := func(_ context.Context, obj client.Object) []reconcile.Request {
 		var requests []reconcile.Request
