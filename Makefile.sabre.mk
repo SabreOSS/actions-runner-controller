@@ -11,11 +11,15 @@ endif
 
 package-controller-chart:  ## build controller chart
 	@echo "Building package-controller"
-	@cd charts/gha-runner-scale-set-controller && helm package . --version ${VERSION} --app-version ${VERSION}
+	@cd charts/gha-runner-scale-set-controller && \
+	rm -rf *tgz && \
+	helm package . --version ${VERSION} --app-version ${VERSION}
 
 package-runnerset-chart: ## build runnerset chart
 	@echo "Building package-runnerset"
-	@cd charts/gha-runner-scale-set && helm package . --version ${VERSION} --app-version ${VERSION}
+	@cd charts/gha-runner-scale-set && \
+	rm -rf *tgz && \
+	helm package . --version ${VERSION} --app-version ${VERSION}
 
 upload-charts: package-controller-chart package-runnerset-chart ## upload charts
 	@echo "Uploading charts"
